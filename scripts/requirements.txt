@@ -1,0 +1,7 @@
+streamlit
+pandas
+twilio
+sqlalchemy
+databricks-sql-connector
+qrcode
+geocoder
