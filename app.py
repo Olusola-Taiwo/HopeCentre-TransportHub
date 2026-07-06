@@ -1,3 +1,4 @@
+import databricks.sql  # forces connector to register dialect
 import os
 import uuid
 from datetime import datetime
