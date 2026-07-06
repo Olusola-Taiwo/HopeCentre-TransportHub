@@ -1,7 +1,7 @@
 streamlit
 pandas
 twilio
-sqlalchemy
+sqlalchemy==1.4.49
 databricks-sql-connector
 qrcode
 geocoder
