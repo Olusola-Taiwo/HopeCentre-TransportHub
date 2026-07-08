@@ -8,9 +8,10 @@ import os
 import psycopg2
 
 # ---------------------------------------------------------
-# Load secrets from Streamlit Cloud
+# Load secrets
 # ---------------------------------------------------------
-NEON_URL = os.getenv("NEON_URL")
+NEON_URL = os.getenv("NEON_URL")      # SQLAlchemy format
+NEON_PG  = os.getenv("NEON_PG")       # psycopg2 format
 
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
@@ -20,12 +21,12 @@ WA_FROM = os.getenv("WA_FROM")
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 # ---------------------------------------------------------
-# Connection Test (run once, then remove)
+# Connection Test (correct format)
 # ---------------------------------------------------------
 st.write("Testing Neon database connection...")
 
 try:
-    conn = psycopg2.connect(NEON_URL)
+    conn = psycopg2.connect(NEON_PG)
     st.success("Connected to Neon successfully!")
     conn.close()
 except Exception as e:
@@ -34,7 +35,7 @@ except Exception as e:
     st.stop()
 
 # ---------------------------------------------------------
-# Database engine (Neon PostgreSQL)
+# SQLAlchemy engine (correct format)
 # ---------------------------------------------------------
 engine = create_engine(NEON_URL)
 
@@ -45,13 +46,11 @@ st.title("RCCG Hope Centre – Sunday Transport Booking")
 
 st.write("Please fill in your details below to book transport for Sunday service.")
 
-# Consent
 consent = st.checkbox("I give consent in compliance with GDPR")
 if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
 
-# Location
 location = st.selectbox(
     "Preferred Pick-up Location",
     [
@@ -63,16 +62,12 @@ location = st.selectbox(
     ]
 )
 
-# Pickup time
 pickup_time = st.selectbox(
     "Preferred Pick-up Time",
     ["07:00","08:00","08:45","09:00","09:15","09:30","09:45","10:00"]
 )
 
-# Phone
 phone = st.text_input("Phone Number")
-
-# Comments
 comments = st.text_area("Comments / Suggestions")
 
 # ---------------------------------------------------------
@@ -96,7 +91,6 @@ if st.button("Submit Booking"):
             "created_at": datetime.now()
         }])
 
-        # Insert into Neon PostgreSQL
         df.to_sql(
             "bookings",
             engine,
@@ -107,14 +101,12 @@ if st.button("Submit Booking"):
         st.success("Your booking has been received. Thank you!")
         st.balloons()
 
-        # SMS confirmation
         client.messages.create(
             body=f"RCCG Hope Centre: Your transport booking for {pickup_time} at {location} is confirmed.",
             from_=SMS_FROM,
             to=phone
         )
 
-        # WhatsApp notification to admin
         client.messages.create(
             body=f"New booking: {location} at {pickup_time}. Phone: {phone}",
             from_=WA_FROM,
