@@ -14,39 +14,70 @@ NEON_URL = os.getenv("NEON_URL")
 NEON_PG  = os.getenv("NEON_PG")
 
 # ---------------------------------------------------------
-# Connection Test
+# Try database connection silently (no UI message)
 # ---------------------------------------------------------
-st.write("Testing Neon database connection...")
-
+db_ok = True
 try:
     conn = psycopg2.connect(NEON_PG)
-    st.success("Connected to Neon successfully!")
     conn.close()
-except Exception as e:
-    st.error("Connection failed.")
-    st.code(str(e))
-    st.stop()
+except:
+    db_ok = False
 
 # ---------------------------------------------------------
-# SQLAlchemy engine
+# Page configuration
 # ---------------------------------------------------------
-engine = create_engine(NEON_URL)
+st.set_page_config(
+    page_title="RCCG Hope Centre Transport Booking",
+    page_icon="🚐",
+    layout="centered"
+)
 
 # ---------------------------------------------------------
-# Streamlit UI
+# Custom CSS for professional background + card layout
 # ---------------------------------------------------------
-st.title("RCCG Hope Centre – Free Transport Booking Hub")
+st.markdown("""
+    <style>
+        body {
+            background-color: #f5f7fa;
+        }
+        .main {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.1);
+        }
+        .title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-st.write("Please fill in your details below to book transport for Sunday service.")
+# ---------------------------------------------------------
+# Header
+# ---------------------------------------------------------
+st.markdown('<div class="title">RCCG Hope Centre – Free Transport Booking Hub</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Please fill in your details below to book transport for Sunday service.</div>', unsafe_allow_html=True)
 
+# ---------------------------------------------------------
 # Consent
+# ---------------------------------------------------------
 consent = st.checkbox("I give consent in compliance with GDPR")
 if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
 
 # ---------------------------------------------------------
-# Postcode input (cleaned)
+# Postcode input
 # ---------------------------------------------------------
 postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().replace(" ", "").upper()
 
@@ -67,7 +98,7 @@ if postcode:
         st.code(str(e))
 
 # ---------------------------------------------------------
-# Address fields (always visible)
+# Address fields
 # ---------------------------------------------------------
 house_number = st.text_input("House Number (e.g., 12)")
 street_name = st.text_input("Street Name (e.g., Oak Street)")
@@ -109,7 +140,6 @@ comments = st.text_area("Comments / Suggestions")
 # ---------------------------------------------------------
 if st.button("Submit Booking"):
 
-    # Validation
     if not phone.strip():
         st.error("Please enter a phone number.")
     elif not postcode_valid:
@@ -139,12 +169,8 @@ if st.button("Submit Booking"):
             "full_address": full_address
         }])
 
-        df.to_sql(
-            "bookings",
-            engine,
-            if_exists="append",
-            index=False
-        )
+        engine = create_engine(NEON_URL)
+        df.to_sql("bookings", engine, if_exists="append", index=False)
 
         st.success("Your booking has been received. Thank you!")
         st.balloons()
