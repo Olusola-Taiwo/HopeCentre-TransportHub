@@ -160,7 +160,7 @@ if location == "Home":
 
     # REAL-TIME validation
     if children_count == 0:
-        st.error("Sorry, this option is only available for parents with kids.")
+        st.error("Sorry, home pickup is only available for parents with kids.")
 
 # Pick-up time
 pickup_time = st.selectbox(
