@@ -35,7 +35,7 @@ engine = create_engine(NEON_URL)
 # ---------------------------------------------------------
 # Streamlit UI
 # ---------------------------------------------------------
-st.title("RCCG Hope Centre – Sunday Transport Booking")
+st.title("RCCG Hope Centre – Free Transport Booking Hub")
 
 st.write("Please fill in your details below to book transport for Sunday service.")
 
