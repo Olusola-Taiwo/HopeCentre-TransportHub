@@ -9,7 +9,7 @@ import os
 # ---------------------------------------------------------
 # Load secrets from Streamlit Cloud
 # ---------------------------------------------------------
-SUPABASE_URL = "postgresql+psycopg2://postgres:Onpoint247%40Hismercy@db.ruslhscgzrpdljxjtbnx.supabase.co:5432/postgres"
+SUPABASE_URL = os.getenv("SUPABASE_URL")
 
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
