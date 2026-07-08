@@ -158,6 +158,10 @@ if location == "Home":
         step=1
     )
 
+    # REAL-TIME validation
+    if children_count == 0:
+        st.error("Sorry, this option is only available for parents with kids.")
+
 # Pick-up time
 pickup_time = st.selectbox(
     "Preferred Pick-up Time",
@@ -178,7 +182,7 @@ if st.button("Submit Booking"):
     if not preferred_name.strip():
         st.error("Please enter your preferred name.")
     elif location == "Home" and children_count == 0:
-        st.error("Sorry, this option is only available for parents with kids.")
+        st.error("Sorry, home pickup is only available for parents with kids.")
     elif not phone.strip():
         st.error("Please enter a phone number.")
     elif not postcode_valid:
