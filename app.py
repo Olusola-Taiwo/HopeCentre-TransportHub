@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from twilio.rest import Client
 import os
+import psycopg2
 
 # ---------------------------------------------------------
 # Load secrets from Streamlit Cloud
@@ -19,9 +20,23 @@ WA_FROM = os.getenv("WA_FROM")
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 # ---------------------------------------------------------
-# Database engine (Supabase PostgreSQL)
+# Connection Test (run once, then remove)
 # ---------------------------------------------------------
-engine = create_engine(os.getenv("NEON_URL"))
+st.write("Testing Neon database connection...")
+
+try:
+    conn = psycopg2.connect(NEON_URL)
+    st.success("Connected to Neon successfully!")
+    conn.close()
+except Exception as e:
+    st.error("Connection failed.")
+    st.code(str(e))
+    st.stop()
+
+# ---------------------------------------------------------
+# Database engine (Neon PostgreSQL)
+# ---------------------------------------------------------
+engine = create_engine(NEON_URL)
 
 # ---------------------------------------------------------
 # Streamlit UI
@@ -81,7 +96,7 @@ if st.button("Submit Booking"):
             "created_at": datetime.now()
         }])
 
-        # Insert into Supabase PostgreSQL
+        # Insert into Neon PostgreSQL
         df.to_sql(
             "bookings",
             engine,
