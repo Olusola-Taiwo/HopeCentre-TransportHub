@@ -14,7 +14,7 @@ NEON_URL = os.getenv("NEON_URL")
 NEON_PG  = os.getenv("NEON_PG")
 
 # ---------------------------------------------------------
-# Try database connection silently (no UI message)
+# Silent database connection test
 # ---------------------------------------------------------
 db_ok = True
 try:
@@ -27,45 +27,59 @@ except:
 # Page configuration
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="RCCG Hope Centre Transport Booking",
+    page_title="RCCG Hope Centre Free Transport Booking",
     page_icon="🚐",
     layout="centered"
 )
 
 # ---------------------------------------------------------
-# Custom CSS for professional background + card layout
+# Custom CSS for colourful professional background
 # ---------------------------------------------------------
 st.markdown("""
     <style>
         body {
-            background-color: #f5f7fa;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 40%, #fbc2eb 100%);
+            background-attachment: fixed;
         }
         .main {
             background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0px 0px 12px rgba(0,0,0,0.1);
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.15);
+            max-width: 700px;
+            margin: auto;
         }
         .title {
             text-align: center;
-            font-size: 32px;
+            font-size: 34px;
             font-weight: bold;
             color: #003366;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .subtitle {
             text-align: center;
-            font-size: 16px;
-            color: #555;
+            font-size: 18px;
+            color: #333;
             margin-bottom: 25px;
+        }
+        .logo {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 140px;
+            margin-bottom: 10px;
         }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Header
+# Header section
 # ---------------------------------------------------------
+st.markdown('<div class="main">', unsafe_allow_html=True)
+
+st.image("hopecentre_logo.png", width=140)
 st.markdown('<div class="title">RCCG Hope Centre – Free Transport Booking Hub</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Centre for Hope, Love & Power</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Please fill in your details below to book transport for Sunday service.</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -174,5 +188,6 @@ if st.button("Submit Booking"):
 
         st.success("Your booking has been received. Thank you!")
         st.balloons()
-
         st.info("No SMS or WhatsApp notifications are enabled at this time.")
+
+st.markdown('</div>', unsafe_allow_html=True)
