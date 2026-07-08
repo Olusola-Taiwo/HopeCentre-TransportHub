@@ -12,7 +12,6 @@ import requests
 # ---------------------------------------------------------
 NEON_URL = os.getenv("NEON_URL")
 NEON_PG  = os.getenv("NEON_PG")
-ADDRESS_API_KEY = os.getenv("ADDRESS_API_KEY")
 
 # ---------------------------------------------------------
 # Connection Test
@@ -47,31 +46,31 @@ if not consent:
     st.stop()
 
 # Postcode
-postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip()
+postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().upper()
 
-addresses = []
+postcode_valid = False
 
 if postcode:
     try:
-        url = f"https://api.ideal-postcodes.co.uk/v1/postcodes/{postcode}?api_key={ADDRESS_API_KEY}"
+        url = f"https://api.postcodes.io/postcodes/{postcode}"
         response = requests.get(url).json()
 
-        if response.get("result"):
-            for addr in response["result"]["addresses"]:
-                full = addr["formatted_address"]
-                addresses.append(full)
-
-            st.success("Postcode found. Please select your full address.")
+        if response["status"] == 200:
+            postcode_valid = True
+            st.success("Postcode is valid. Please enter your house number and street name.")
         else:
             st.error("Postcode not found. Please check and try again.")
     except Exception as e:
-        st.error("Error looking up postcode.")
+        st.error("Error validating postcode.")
         st.code(str(e))
 
-# Address selection
-full_address = None
-if addresses:
-    full_address = st.selectbox("Select your full address", addresses)
+# House number + street name
+house_number = None
+street_name = None
+
+if postcode_valid:
+    house_number = st.text_input("House Number (e.g., 12)")
+    street_name = st.text_input("Street Name (e.g., Oak Street)")
 
 # Location
 location = st.selectbox(
@@ -103,11 +102,15 @@ comments = st.text_area("Comments / Suggestions")
 if st.button("Submit Booking"):
     if not phone:
         st.error("Please enter a phone number.")
-    elif not postcode:
-        st.error("Please enter a postcode.")
-    elif not full_address:
-        st.error("Please select your full address.")
+    elif not postcode_valid:
+        st.error("Please enter a valid postcode.")
+    elif not house_number:
+        st.error("Please enter your house number.")
+    elif not street_name:
+        st.error("Please enter your street name.")
     else:
+        full_address = f"{house_number} {street_name}, {postcode}"
+
         booking_id = str(uuid.uuid4())
 
         df = pd.DataFrame([{
@@ -121,6 +124,8 @@ if st.button("Submit Booking"):
             "checked_in": False,
             "created_at": datetime.now(),
             "postcode": postcode,
+            "house_number": house_number,
+            "street_name": street_name,
             "full_address": full_address
         }])
 
