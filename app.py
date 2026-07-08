@@ -90,7 +90,7 @@ st.markdown("<h1>RCCG Hope Centre – Crewe</h1>", unsafe_allow_html=True)
 st.markdown("<h3>Centre for Hope, Love & Power</h3>", unsafe_allow_html=True)
 st.markdown("""
     <p>
-        Welcome to our Transport Booking Hub.<br>
+        Welcome to our Sunday Transport Booking Hub.<br>
         We provide <strong>free transport</strong> every Sunday for worship service.<br>
         Please book your seat below.
     </p>
@@ -111,7 +111,7 @@ if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
 
-# Preferred Name (NOW REQUIRED)
+# Preferred Name (REQUIRED)
 preferred_name = st.text_input("Preferred Name (required)")
 
 # Postcode
@@ -144,9 +144,19 @@ location = st.selectbox(
         "ALDI by Nantwich Road",
         "ASDA",
         "LIDL / Costa Coffee by Mills Street",
-        "Big Morissons"
+        "Big Morissons",
+        "Home"
     ]
 )
+
+children_count = None
+if location == "Home":
+    children_count = st.number_input(
+        "How many children will be travelling?",
+        min_value=0,
+        max_value=10,
+        step=1
+    )
 
 # Pick-up time
 pickup_time = st.selectbox(
@@ -167,6 +177,8 @@ if st.button("Submit Booking"):
 
     if not preferred_name.strip():
         st.error("Please enter your preferred name.")
+    elif location == "Home" and children_count == 0:
+        st.error("Sorry, this option is only available for parents with kids.")
     elif not phone.strip():
         st.error("Please enter a phone number.")
     elif not postcode_valid:
@@ -184,7 +196,6 @@ if st.button("Submit Booking"):
             "consent": True,
             "location": location,
             "pickup_time": pickup_time,
-            "preferred_name": preferred_name.strip(),
             "phone": phone,
             "comments": comments,
             "driver": None,
@@ -193,7 +204,9 @@ if st.button("Submit Booking"):
             "postcode": postcode,
             "house_number": house_number.strip(),
             "street_name": street_name.strip(),
-            "full_address": full_address
+            "full_address": full_address,
+            "preferred_name": preferred_name.strip(),
+            "children_count": int(children_count) if children_count is not None else None
         }])
 
         engine = create_engine(NEON_URL)
