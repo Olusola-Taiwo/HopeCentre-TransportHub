@@ -16,24 +16,23 @@ NEON_PG  = os.getenv("NEON_PG")
 # ---------------------------------------------------------
 # Silent database connection test
 # ---------------------------------------------------------
-db_ok = True
 try:
     conn = psycopg2.connect(NEON_PG)
     conn.close()
 except:
-    db_ok = False
+    pass
 
 # ---------------------------------------------------------
 # Page configuration
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="RCCG Hope Centre Free Transport Booking",
+    page_title="RCCG Hope Centre Free Transport Booking Hub",
     page_icon="🚐",
     layout="centered"
 )
 
 # ---------------------------------------------------------
-# Custom CSS for colourful professional background
+# Custom CSS for colourful hero + clean form
 # ---------------------------------------------------------
 st.markdown("""
     <style>
@@ -41,7 +40,36 @@ st.markdown("""
             background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 40%, #fbc2eb 100%);
             background-attachment: fixed;
         }
-        .main {
+
+        .hero {
+            background: rgba(255,255,255,0.85);
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 18px;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.15);
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        .hero h3 {
+            font-size: 22px;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .form-card {
             background-color: #ffffff;
             padding: 35px;
             border-radius: 18px;
@@ -49,52 +77,42 @@ st.markdown("""
             max-width: 700px;
             margin: auto;
         }
-        .title {
-            text-align: center;
-            font-size: 34px;
-            font-weight: bold;
-            color: #003366;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            text-align: center;
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 25px;
-        }
-        .logo {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            width: 140px;
-            margin-bottom: 10px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Header section
+# HERO SECTION
 # ---------------------------------------------------------
-st.markdown('<div class="main">', unsafe_allow_html=True)
+st.markdown('<div class="hero">', unsafe_allow_html=True)
 
-st.image("hopecentre_logo.png", width=140)
-st.markdown('<div class="title">RCCG Hope Centre – Free Transport Booking Hub</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Centre for Hope, Love & Power</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Please fill in your details below to book transport for Sunday service.</div>', unsafe_allow_html=True)
+st.image("hopecentre_logo.png", width=160)
+st.markdown("<h1>RCCG Hope Centre – Crewe</h1>", unsafe_allow_html=True)
+st.markdown("<h3>Centre for Hope, Love & Power</h3>", unsafe_allow_html=True)
+st.markdown("""
+    <p>
+        Welcome to our Sunday Transport Booking Hub.<br>
+        We provide **free transport** every Sunday for worship service.<br>
+        Please book your seat below.
+    </p>
+""", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
+# BOOKING FORM CARD
+# ---------------------------------------------------------
+st.markdown('<div class="form-card">', unsafe_allow_html=True)
+
+st.header("Sunday Transport Booking Form")
+
 # Consent
-# ---------------------------------------------------------
 consent = st.checkbox("I give consent in compliance with GDPR")
 if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
 
-# ---------------------------------------------------------
-# Postcode input
-# ---------------------------------------------------------
+# Postcode
 postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().replace(" ", "").upper()
-
 postcode_valid = False
 
 if postcode:
@@ -111,15 +129,11 @@ if postcode:
         st.error("Error validating postcode.")
         st.code(str(e))
 
-# ---------------------------------------------------------
 # Address fields
-# ---------------------------------------------------------
 house_number = st.text_input("House Number (e.g., 12)")
 street_name = st.text_input("Street Name (e.g., Oak Street)")
 
-# ---------------------------------------------------------
 # Pick-up location
-# ---------------------------------------------------------
 location = st.selectbox(
     "Preferred Pick-up Location",
     [
@@ -131,22 +145,16 @@ location = st.selectbox(
     ]
 )
 
-# ---------------------------------------------------------
 # Pick-up time
-# ---------------------------------------------------------
 pickup_time = st.selectbox(
     "Preferred Pick-up Time",
     ["07:00","08:00","08:45","09:00","09:15","09:30","09:45","10:00"]
 )
 
-# ---------------------------------------------------------
-# Phone number
-# ---------------------------------------------------------
+# Phone
 phone = st.text_input("Phone Number")
 
-# ---------------------------------------------------------
 # Comments
-# ---------------------------------------------------------
 comments = st.text_area("Comments / Suggestions")
 
 # ---------------------------------------------------------
@@ -164,7 +172,6 @@ if st.button("Submit Booking"):
         st.error("Please enter your street name.")
     else:
         full_address = f"{house_number.strip()} {street_name.strip()}, {postcode}"
-
         booking_id = str(uuid.uuid4())
 
         df = pd.DataFrame([{
@@ -188,6 +195,5 @@ if st.button("Submit Booking"):
 
         st.success("Your booking has been received. Thank you!")
         st.balloons()
-        st.info("No SMS or WhatsApp notifications are enabled at this time.")
 
 st.markdown('</div>', unsafe_allow_html=True)
