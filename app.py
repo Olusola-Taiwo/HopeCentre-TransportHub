@@ -26,7 +26,7 @@ except:
 # Page configuration
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="RCCG Hope Centre Free Transport Booking Hub",
+    page_title="RCCG Hope Centre Transport Booking",
     page_icon="🚐",
     layout="centered"
 )
@@ -90,8 +90,8 @@ st.markdown("<h1>RCCG Hope Centre – Crewe</h1>", unsafe_allow_html=True)
 st.markdown("<h3>Centre for Hope, Love & Power</h3>", unsafe_allow_html=True)
 st.markdown("""
     <p>
-        Welcome to our Transport Booking Hub.<br>
-        We provide **free transport** every Sunday for worship service.<br>
+        Welcome to our Sunday Transport Booking Hub.<br>
+        We provide <strong>free transport</strong> every Sunday for worship service.<br>
         Please book your seat below.
     </p>
 """, unsafe_allow_html=True)
@@ -110,6 +110,9 @@ consent = st.checkbox("I give consent in compliance with GDPR")
 if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
+
+# Preferred Name (NOW REQUIRED)
+preferred_name = st.text_input("Preferred Name (required)")
 
 # Postcode
 postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().replace(" ", "").upper()
@@ -162,7 +165,9 @@ comments = st.text_area("Comments / Suggestions")
 # ---------------------------------------------------------
 if st.button("Submit Booking"):
 
-    if not phone.strip():
+    if not preferred_name.strip():
+        st.error("Please enter your preferred name.")
+    elif not phone.strip():
         st.error("Please enter a phone number.")
     elif not postcode_valid:
         st.error("Please enter a valid postcode.")
@@ -179,6 +184,7 @@ if st.button("Submit Booking"):
             "consent": True,
             "location": location,
             "pickup_time": pickup_time,
+            "preferred_name": preferred_name.strip(),
             "phone": phone,
             "comments": comments,
             "driver": None,
