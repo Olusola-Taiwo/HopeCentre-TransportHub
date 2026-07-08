@@ -9,7 +9,7 @@ import os
 # ---------------------------------------------------------
 # Load secrets from Streamlit Cloud
 # ---------------------------------------------------------
-SUPABASE_URL = os.getenv("SUPABASE_URL")
+NEON_URL = os.getenv("NEON_URL")
 
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
@@ -21,7 +21,7 @@ client = Client(ACCOUNT_SID, AUTH_TOKEN)
 # ---------------------------------------------------------
 # Database engine (Supabase PostgreSQL)
 # ---------------------------------------------------------
-engine = create_engine(SUPABASE_URL)
+engine = create_engine(os.getenv("NEON_URL"))
 
 # ---------------------------------------------------------
 # Streamlit UI
