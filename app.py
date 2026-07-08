@@ -12,6 +12,7 @@ import requests
 # ---------------------------------------------------------
 NEON_URL = os.getenv("NEON_URL")
 NEON_PG  = os.getenv("NEON_PG")
+ADDRESS_API_KEY = os.getenv("ADDRESS_API_KEY")
 
 # ---------------------------------------------------------
 # Connection Test
@@ -52,17 +53,15 @@ addresses = []
 
 if postcode:
     try:
-        url = f"https://api.postcodes.io/postcodes/{postcode}"
+        url = f"https://api.ideal-postcodes.co.uk/v1/postcodes/{postcode}?api_key={ADDRESS_API_KEY}"
         response = requests.get(url).json()
 
-        if response["status"] == 200:
-            result = response["result"]
+        if response.get("result"):
+            for addr in response["result"]["addresses"]:
+                full = addr["formatted_address"]
+                addresses.append(full)
 
-            # Build full address from available fields
-            full_address = f"{result['admin_ward']}, {result['parish']}, {result['region']}"
-            addresses.append(full_address)
-
-            st.success("Postcode found. Please select your address.")
+            st.success("Postcode found. Please select your full address.")
         else:
             st.error("Postcode not found. Please check and try again.")
     except Exception as e:
@@ -70,9 +69,9 @@ if postcode:
         st.code(str(e))
 
 # Address selection
-address = None
+full_address = None
 if addresses:
-    address = st.selectbox("Select your address", addresses)
+    full_address = st.selectbox("Select your full address", addresses)
 
 # Location
 location = st.selectbox(
@@ -106,8 +105,8 @@ if st.button("Submit Booking"):
         st.error("Please enter a phone number.")
     elif not postcode:
         st.error("Please enter a postcode.")
-    elif not address:
-        st.error("Please select an address.")
+    elif not full_address:
+        st.error("Please select your full address.")
     else:
         booking_id = str(uuid.uuid4())
 
@@ -122,7 +121,7 @@ if st.button("Submit Booking"):
             "checked_in": False,
             "created_at": datetime.now(),
             "postcode": postcode,
-            "address": address
+            "full_address": full_address
         }])
 
         df.to_sql(
