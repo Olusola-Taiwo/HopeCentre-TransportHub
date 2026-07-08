@@ -90,7 +90,7 @@ st.markdown("<h1>RCCG Hope Centre – Crewe</h1>", unsafe_allow_html=True)
 st.markdown("<h3>Centre for Hope, Love & Power</h3>", unsafe_allow_html=True)
 st.markdown("""
     <p>
-        Welcome to our Sunday Transport Booking Hub.<br>
+        Welcome to our Transport Booking Hub.<br>
         We provide <strong>free transport</strong> every Sunday for worship service.<br>
         Please book your seat below.
     </p>
