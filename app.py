@@ -45,8 +45,10 @@ if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
 
-# Postcode
-postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().upper()
+# ---------------------------------------------------------
+# Postcode input (cleaned)
+# ---------------------------------------------------------
+postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().replace(" ", "").upper()
 
 postcode_valid = False
 
@@ -64,15 +66,15 @@ if postcode:
         st.error("Error validating postcode.")
         st.code(str(e))
 
-# House number + street name
-house_number = None
-street_name = None
+# ---------------------------------------------------------
+# Address fields (always visible)
+# ---------------------------------------------------------
+house_number = st.text_input("House Number (e.g., 12)")
+street_name = st.text_input("Street Name (e.g., Oak Street)")
 
-if postcode_valid:
-    house_number = st.text_input("House Number (e.g., 12)")
-    street_name = st.text_input("Street Name (e.g., Oak Street)")
-
-# Location
+# ---------------------------------------------------------
+# Pick-up location
+# ---------------------------------------------------------
 location = st.selectbox(
     "Preferred Pick-up Location",
     [
@@ -84,32 +86,40 @@ location = st.selectbox(
     ]
 )
 
-# Pickup time
+# ---------------------------------------------------------
+# Pick-up time
+# ---------------------------------------------------------
 pickup_time = st.selectbox(
     "Preferred Pick-up Time",
     ["07:00","08:00","08:45","09:00","09:15","09:30","09:45","10:00"]
 )
 
-# Phone
+# ---------------------------------------------------------
+# Phone number
+# ---------------------------------------------------------
 phone = st.text_input("Phone Number")
 
+# ---------------------------------------------------------
 # Comments
+# ---------------------------------------------------------
 comments = st.text_area("Comments / Suggestions")
 
 # ---------------------------------------------------------
 # Submit booking
 # ---------------------------------------------------------
 if st.button("Submit Booking"):
-    if not phone:
+
+    # Validation
+    if not phone.strip():
         st.error("Please enter a phone number.")
     elif not postcode_valid:
         st.error("Please enter a valid postcode.")
-    elif not house_number:
+    elif not house_number.strip():
         st.error("Please enter your house number.")
-    elif not street_name:
+    elif not street_name.strip():
         st.error("Please enter your street name.")
     else:
-        full_address = f"{house_number} {street_name}, {postcode}"
+        full_address = f"{house_number.strip()} {street_name.strip()}, {postcode}"
 
         booking_id = str(uuid.uuid4())
 
@@ -124,8 +134,8 @@ if st.button("Submit Booking"):
             "checked_in": False,
             "created_at": datetime.now(),
             "postcode": postcode,
-            "house_number": house_number,
-            "street_name": street_name,
+            "house_number": house_number.strip(),
+            "street_name": street_name.strip(),
             "full_address": full_address
         }])
 
