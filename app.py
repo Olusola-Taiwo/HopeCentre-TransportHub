@@ -32,7 +32,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# Custom CSS for colourful hero + clean form
+# Custom CSS
 # ---------------------------------------------------------
 st.markdown("""
     <style>
@@ -48,25 +48,6 @@ st.markdown("""
             border-radius: 18px;
             box-shadow: 0px 4px 20px rgba(0,0,0,0.15);
             margin-bottom: 40px;
-        }
-
-        .hero h1 {
-            font-size: 40px;
-            font-weight: bold;
-            color: #003366;
-            margin-bottom: 10px;
-        }
-
-        .hero h3 {
-            font-size: 22px;
-            color: #444;
-            margin-bottom: 20px;
-        }
-
-        .hero p {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 25px;
         }
 
         .form-card {
@@ -99,10 +80,9 @@ st.markdown("""
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# BOOKING FORM CARD
+# BOOKING FORM
 # ---------------------------------------------------------
 st.markdown('<div class="form-card">', unsafe_allow_html=True)
-
 st.header("Sunday Transport Booking Form")
 
 # Consent
@@ -111,7 +91,7 @@ if not consent:
     st.warning("You must give consent to continue.")
     st.stop()
 
-# Preferred Name (REQUIRED)
+# Preferred Name
 preferred_name = st.text_input("Preferred Name (required)")
 
 # Postcode
@@ -136,7 +116,7 @@ if postcode:
 house_number = st.text_input("House Number (e.g., 12)")
 street_name = st.text_input("Street Name (e.g., Oak Street)")
 
-# Number of Adults
+# Number of Adults (always required)
 adult_count = st.number_input(
     "Number of Adults",
     min_value=1,
@@ -144,14 +124,13 @@ adult_count = st.number_input(
     step=1
 )
 
-# Number of Children
-childreb_count = st.number_input(
+# Number of Children (general)
+children_general = st.number_input(
     "Number of Children",
     min_value=0,
     max_value=100,
     step=1
 )
-
 
 # Pick-up location
 location = st.selectbox(
@@ -166,16 +145,16 @@ location = st.selectbox(
     ]
 )
 
+# Children travelling (auto-populated when Home is selected)
 children_count = None
 if location == "Home":
     children_count = st.number_input(
         "How many children will be travelling?",
-        min_value=0,
+        min_value=children_general,
         max_value=100,
         step=1
     )
 
-    # REAL-TIME validation
     if children_count == 0:
         st.error("Sorry, home pickup is only available for parents with kids.")
 
@@ -198,6 +177,8 @@ if st.button("Submit Booking"):
 
     if not preferred_name.strip():
         st.error("Please enter your preferred name.")
+    elif adult_count < 1:
+        st.error("At least one adult must be travelling.")
     elif location == "Home" and children_count == 0:
         st.error("Sorry, home pickup is only available for parents with kids.")
     elif not phone.strip():
@@ -227,7 +208,8 @@ if st.button("Submit Booking"):
             "street_name": street_name.strip(),
             "full_address": full_address,
             "preferred_name": preferred_name.strip(),
-            "children_count": int(children_count) if children_count is not None else None
+            "adult_count": int(adult_count),
+            "children_count": int(children_count) if children_count is not None else int(children_general)
         }])
 
         engine = create_engine(NEON_URL)
