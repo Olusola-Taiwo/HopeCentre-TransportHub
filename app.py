@@ -136,6 +136,23 @@ if postcode:
 house_number = st.text_input("House Number (e.g., 12)")
 street_name = st.text_input("Street Name (e.g., Oak Street)")
 
+# Number of Adults
+adult_count = st.number_input(
+    "Number of Adults",
+    min_value=1,
+    max_value=100,
+    step=1
+)
+
+# Number of Children
+childreb_count = st.number_input(
+    "Number of Children",
+    min_value=0,
+    max_value=100,
+    step=1
+)
+
+
 # Pick-up location
 location = st.selectbox(
     "Preferred Pick-up Location",
