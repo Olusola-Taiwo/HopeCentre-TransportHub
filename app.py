@@ -4,24 +4,14 @@ import uuid
 from datetime import datetime
 from sqlalchemy import create_engine
 import os
-import psycopg2
 import requests
 import base64
 
 # ---------------------------------------------------------
 # Load secrets
 # ---------------------------------------------------------
-NEON_URL = os.getenv("NEON_URL")
-NEON_PG  = os.getenv("NEON_PG")
-
-# ---------------------------------------------------------
-# Silent database connection test
-# ---------------------------------------------------------
-try:
-    conn = psycopg2.connect(NEON_PG)
-    conn.close()
-except:
-    pass
+NEON_URL = os.getenv("NEON_URL")   # Example: postgres://user:pass@host/db
+NEON_PG  = os.getenv("NEON_PG")    # Optional – not used at startup
 
 # ---------------------------------------------------------
 # SAFE BACKGROUND IMAGE + DARK OVERLAY
@@ -31,8 +21,7 @@ def add_bg_image(image_path):
         with open(image_path, "rb") as img_file:
             encoded = base64.b64encode(img_file.read()).decode()
     except Exception:
-        # Fail gracefully – app still loads
-        return
+        return  # Fail gracefully
 
     css = f"""
     <style>
@@ -230,11 +219,14 @@ def main():
                 "children_count": int(children_count) if children_count is not None else None
             }])
 
-            engine = create_engine(NEON_URL)
-            df.to_sql("bookings", engine, if_exists="append", index=False)
-
-            st.success("Your booking has been received. Thank you!")
-            st.balloons()
+            try:
+                engine = create_engine(f"{NEON_URL}?sslmode=require")
+                df.to_sql("bookings", engine, if_exists="append", index=False)
+                st.success("Your booking has been received. Thank you!")
+                st.balloons()
+            except Exception as e:
+                st.error("Database error — could not save booking.")
+                st.code(str(e))
 
     st.markdown('</div></div>', unsafe_allow_html=True)
 
