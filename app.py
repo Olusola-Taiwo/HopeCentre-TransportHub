@@ -154,7 +154,7 @@ if location == "Home":
     children_count = st.number_input(
         "How many children will be travelling?",
         min_value=0,
-        max_value=10,
+        max_value=100,
         step=1
     )
 
