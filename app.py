@@ -24,20 +24,15 @@ except:
     pass
 
 # ---------------------------------------------------------
-# Page configuration
-# ---------------------------------------------------------
-st.set_page_config(
-    page_title="RCCG Hope Centre Transport Booking",
-    page_icon="🚐",
-    layout="centered"
-)
-
-# ---------------------------------------------------------
-# BACKGROUND IMAGE + DARK OVERLAY
+# BACKGROUND IMAGE + DARK OVERLAY (SAFE VERSION)
 # ---------------------------------------------------------
 def add_bg_image(image_path):
-    with open(image_path, "rb") as img_file:
-        encoded = base64.b64encode(img_file.read()).decode()
+    try:
+        with open(image_path, "rb") as img_file:
+            encoded = base64.b64encode(img_file.read()).decode()
+    except Exception:
+        # Fail gracefully – app still loads
+        return
 
     css = f"""
     <style>
@@ -49,7 +44,6 @@ def add_bg_image(image_path):
             position: relative;
         }}
 
-        /* Dark overlay */
         .stApp::before {{
             content: "";
             position: absolute;
@@ -61,7 +55,6 @@ def add_bg_image(image_path):
             z-index: 0;
         }}
 
-        /* Ensure content sits above overlay */
         .main-content {{
             position: relative;
             z-index: 1;
@@ -85,173 +78,166 @@ def add_bg_image(image_path):
             box-shadow: 0px 4px 20px rgba(0,0,0,0.15);
             margin-bottom: 40px;
         }}
-
-        .hero h1 {{
-            font-size: 40px;
-            font-weight: bold;
-            color: #003366;
-            margin-bottom: 10px;
-        }}
-
-        .hero h3 {{
-            font-size: 22px;
-            color: #444;
-            margin-bottom: 20px;
-        }}
-
-        .hero p {{
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 25px;
-        }}
     </style>
     """
     st.markdown(css, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Apply background
+# MAIN APP
 # ---------------------------------------------------------
-add_bg_image("tp_booking.jpg")   # <-- your background image
+def main():
 
-st.markdown("<div class='main-content'>", unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# HERO SECTION
-# ---------------------------------------------------------
-st.markdown('<div class="hero">', unsafe_allow_html=True)
-
-st.image("hopecentre_logo.png", width=160)
-st.markdown("<h1>RCCG Hope Centre – Crewe</h1>", unsafe_allow_html=True)
-st.markdown("<h3>Centre for Hope, Love & Power</h3>", unsafe_allow_html=True)
-st.markdown("""
-    <p>
-        Welcome to our Sunday Transport Booking Hub.<br>
-        We provide <strong>free transport</strong> every Sunday for worship service.<br>
-        Please book your seat below.
-    </p>
-""", unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# BOOKING FORM CARD
-# ---------------------------------------------------------
-st.markdown('<div class="form-card">', unsafe_allow_html=True)
-
-st.header("Sunday Transport Booking Form")
-
-# Consent
-consent = st.checkbox("I give consent in compliance with GDPR")
-if not consent:
-    st.warning("You must give consent to continue.")
-    st.stop()
-
-# Preferred Name (REQUIRED)
-preferred_name = st.text_input("Preferred Name (required)")
-
-# Postcode
-postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().replace(" ", "").upper()
-postcode_valid = False
-
-if postcode:
-    try:
-        url = f"https://api.postcodes.io/postcodes/{postcode}"
-        response = requests.get(url).json()
-
-        if response["status"] == 200:
-            postcode_valid = True
-            st.success("Postcode is valid. Please enter your house number and street name.")
-        else:
-            st.error("Postcode not found. Please check and try again.")
-    except Exception as e:
-        st.error("Error validating postcode.")
-        st.code(str(e))
-
-# Address fields
-house_number = st.text_input("House Number (e.g., 12)")
-street_name = st.text_input("Street Name (e.g., Oak Street)")
-
-# Pick-up location
-location = st.selectbox(
-    "Preferred Pick-up Location",
-    [
-        "Burger King / KFC by Grand Junction",
-        "ALDI by Nantwich Road",
-        "ASDA",
-        "LIDL / Costa Coffee by Mills Street",
-        "Big Morissons",
-        "Home"
-    ]
-)
-
-children_count = None
-if location == "Home":
-    children_count = st.number_input(
-        "How many children will be travelling?",
-        min_value=0,
-        max_value=10,
-        step=1
+    st.set_page_config(
+        page_title="RCCG Hope Centre Transport Booking",
+        page_icon="🚐",
+        layout="centered"
     )
 
-    # REAL-TIME validation
-    if children_count == 0:
-        st.error("Sorry, home pickup is only available for parents with kids.")
+    # SAFE background load
+    add_bg_image("tp_booking.jpg")
 
-# Pick-up time
-pickup_time = st.selectbox(
-    "Preferred Pick-up Time",
-    ["07:00","08:00","08:45","09:00","09:15","09:30","09:45","10:00"]
-)
+    st.markdown("<div class='main-content'>", unsafe_allow_html=True)
 
-# Phone
-phone = st.text_input("Phone Number")
+    # ---------------------------------------------------------
+    # HERO SECTION
+    # ---------------------------------------------------------
+    st.markdown('<div class="hero">', unsafe_allow_html=True)
 
-# Comments
-comments = st.text_area("Comments / Suggestions")
+    st.image("hopecentre_logo.png", width=160)
+    st.markdown("<h1>RCCG Hope Centre – Crewe</h1>", unsafe_allow_html=True)
+    st.markdown("<h3>Centre for Hope, Love & Power</h3>", unsafe_allow_html=True)
+    st.markdown("""
+        <p>
+            Welcome to our Sunday Transport Booking Hub.<br>
+            We provide <strong>free transport</strong> every Sunday for worship service.<br>
+            Please book your seat below.
+        </p>
+    """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# Submit booking
-# ---------------------------------------------------------
-if st.button("Submit Booking"):
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    if not preferred_name.strip():
-        st.error("Please enter your preferred name.")
-    elif location == "Home" and children_count == 0:
-        st.error("Sorry, home pickup is only available for parents with kids.")
-    elif not phone.strip():
-        st.error("Please enter a phone number.")
-    elif not postcode_valid:
-        st.error("Please enter a valid postcode.")
-    elif not house_number.strip():
-        st.error("Please enter your house number.")
-    elif not street_name.strip():
-        st.error("Please enter your street name.")
-    else:
-        full_address = f"{house_number.strip()} {street_name.strip()}, {postcode}"
-        booking_id = str(uuid.uuid4())
+    # ---------------------------------------------------------
+    # BOOKING FORM CARD
+    # ---------------------------------------------------------
+    st.markdown('<div class="form-card">', unsafe_allow_html=True)
 
-        df = pd.DataFrame([{
-            "booking_id": booking_id,
-            "consent": True,
-            "location": location,
-            "pickup_time": pickup_time,
-            "phone": phone,
-            "comments": comments,
-            "driver": None,
-            "checked_in": False,
-            "created_at": datetime.now(),
-            "postcode": postcode,
-            "house_number": house_number.strip(),
-            "street_name": street_name.strip(),
-            "full_address": full_address,
-            "preferred_name": preferred_name.strip(),
-            "children_count": int(children_count) if children_count is not None else None
-        }])
+    st.header("Sunday Transport Booking Form")
 
-        engine = create_engine(NEON_URL)
-        df.to_sql("bookings", engine, if_exists="append", index=False)
+    # Consent
+    consent = st.checkbox("I give consent in compliance with GDPR")
+    if not consent:
+        st.warning("You must give consent to continue.")
+        st.stop()
 
-        st.success("Your booking has been received. Thank you!")
-        st.balloons()
+    # Preferred Name (REQUIRED)
+    preferred_name = st.text_input("Preferred Name (required)")
 
-st.markdown('</div></div>', unsafe_allow_html=True)
+    # Postcode
+    postcode = st.text_input("Enter your postcode (e.g., CW1 2AB)").strip().replace(" ", "").upper()
+    postcode_valid = False
+
+    if postcode:
+        try:
+            url = f"https://api.postcodes.io/postcodes/{postcode}"
+            response = requests.get(url).json()
+
+            if response["status"] == 200:
+                postcode_valid = True
+                st.success("Postcode is valid. Please enter your house number and street name.")
+            else:
+                st.error("Postcode not found. Please check and try again.")
+        except Exception as e:
+            st.error("Error validating postcode.")
+            st.code(str(e))
+
+    # Address fields
+    house_number = st.text_input("House Number (e.g., 12)")
+    street_name = st.text_input("Street Name (e.g., Oak Street)")
+
+    # Pick-up location
+    location = st.selectbox(
+        "Preferred Pick-up Location",
+        [
+            "Burger King / KFC by Grand Junction",
+            "ALDI by Nantwich Road",
+            "ASDA",
+            "LIDL / Costa Coffee by Mills Street",
+            "Big Morissons",
+            "Home"
+        ]
+    )
+
+    children_count = None
+    if location == "Home":
+        children_count = st.number_input(
+            "How many children will be travelling?",
+            min_value=0,
+            max_value=10,
+            step=1
+        )
+
+        if children_count == 0:
+            st.error("Sorry, home pickup is only available for parents with kids.")
+
+    # Pick-up time
+    pickup_time = st.selectbox(
+        "Preferred Pick-up Time",
+        ["07:00","08:00","08:45","09:00","09:15","09:30","09:45","10:00"]
+    )
+
+    # Phone
+    phone = st.text_input("Phone Number")
+
+    # Comments
+    comments = st.text_area("Comments / Suggestions")
+
+    # ---------------------------------------------------------
+    # Submit booking
+    # ---------------------------------------------------------
+    if st.button("Submit Booking"):
+
+        if not preferred_name.strip():
+            st.error("Please enter your preferred name.")
+        elif location == "Home" and children_count == 0:
+            st.error("Sorry, home pickup is only available for parents with kids.")
+        elif not phone.strip():
+            st.error("Please enter a phone number.")
+        elif not postcode_valid:
+            st.error("Please enter a valid postcode.")
+        elif not house_number.strip():
+            st.error("Please enter your house number.")
+        elif not street_name.strip():
+            st.error("Please enter your street name.")
+        else:
+            full_address = f"{house_number.strip()} {street_name.strip()}, {postcode}"
+            booking_id = str(uuid.uuid4())
+
+            df = pd.DataFrame([{
+                "booking_id": booking_id,
+                "consent": True,
+                "location": location,
+                "pickup_time": pickup_time,
+                "phone": phone,
+                "comments": comments,
+                "driver": None,
+                "checked_in": False,
+                "created_at": datetime.now(),
+                "postcode": postcode,
+                "house_number": house_number.strip(),
+                "street_name": street_name.strip(),
+                "full_address": full_address,
+                "preferred_name": preferred_name.strip(),
+                "children_count": int(children_count) if children_count is not None else None
+            }])
+
+            engine = create_engine(NEON_URL)
+            df.to_sql("bookings", engine, if_exists="append", index=False)
+
+            st.success("Your booking has been received. Thank you!")
+            st.balloons()
+
+    st.markdown('</div></div>', unsafe_allow_html=True)
+
+
+if __name__ == "__main__":
+    main()
