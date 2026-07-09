@@ -24,7 +24,7 @@ except:
     pass
 
 # ---------------------------------------------------------
-# BACKGROUND IMAGE + DARK OVERLAY (SAFE VERSION)
+# SAFE BACKGROUND IMAGE + DARK OVERLAY
 # ---------------------------------------------------------
 def add_bg_image(image_path):
     try:
