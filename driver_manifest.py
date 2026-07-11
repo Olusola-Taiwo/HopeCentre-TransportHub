@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import os
 
 # ---------------------------------------------------------
@@ -49,7 +49,12 @@ query = """
     ORDER BY b.pickup_time ASC
 """
 
-manifest_df = pd.read_sql(query, engine, params={"driver_id": driver_id})
+# ⭐ FIX: wrap SQL in text() so named parameters work
+manifest_df = pd.read_sql(
+    text(query),
+    engine,
+    params={"driver_id": driver_id}
+)
 
 # ---------------------------------------------------------
 # Display manifest
@@ -65,7 +70,7 @@ else:
     total_adults = manifest_df["adult_count"].sum()
     total_children = manifest_df["children_count"].sum()
 
-    st.markdown(f"### Summary")
+    st.markdown("### Summary")
     st.markdown(f"- **Adults:** {total_adults}")
     st.markdown(f"- **Children:** {total_children}")
     st.markdown(f"- **Total passengers:** {total_adults + total_children}")
