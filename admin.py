@@ -1,27 +1,40 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine
+import uuid
+from datetime import datetime
+from sqlalchemy import create_engine, text
 import os
+import psycopg2
+import requests
 
 # ---------------------------------------------------------
 # Load secrets
 # ---------------------------------------------------------
 NEON_URL = os.getenv("NEON_URL")
+NEON_PG  = os.getenv("NEON_PG")
 
 # ---------------------------------------------------------
-# Page config
+# Silent database connection test
+# ---------------------------------------------------------
+try:
+    conn = psycopg2.connect(NEON_PG)
+    conn.close()
+except:
+    pass
+
+# ---------------------------------------------------------
+# Page configuration
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Hope Centre Admin Dashboard",
-    page_icon="🛠️",
+    page_title="RCCG Hope Centre Transport Admin",
+    page_icon="🚐",
     layout="wide"
 )
 
-st.title("🛠️ RCCG Hope Centre – Admin Dashboard")
-st.write("View and manage all transport bookings.")
+st.title("🚐 RCCG Hope Centre – Transport Admin Dashboard")
 
 # ---------------------------------------------------------
-# Database connection
+# Load database engine
 # ---------------------------------------------------------
 engine = create_engine(NEON_URL)
 
@@ -53,26 +66,20 @@ except Exception as e:
     st.stop()
 
 # ---------------------------------------------------------
-# Display table
-# ---------------------------------------------------------
-st.subheader("📋 All Bookings")
-
-st.dataframe(df, use_container_width=True)
-
-# ---------------------------------------------------------
 # Load drivers
 # ---------------------------------------------------------
 try:
-    drivers_df = pd.read_sql("""
-        SELECT driver_id, driver_name 
-        FROM drivers 
-        WHERE active = TRUE
-        ORDER BY driver_name ASC
-    """, engine)
+    drivers_df = pd.read_sql("SELECT driver_id, driver_name FROM drivers WHERE active = TRUE", engine)
 except Exception as e:
     st.error("Unable to load drivers.")
     st.code(str(e))
     st.stop()
+
+# ---------------------------------------------------------
+# Display bookings
+# ---------------------------------------------------------
+st.subheader("📋 All Bookings")
+st.dataframe(df, use_container_width=True)
 
 # ---------------------------------------------------------
 # Driver assignment
@@ -95,10 +102,11 @@ if st.button("Assign Driver"):
             ].iloc[0]
         )
 
-        # Update booking
+        # Update booking using SQLAlchemy text()
         with engine.begin() as conn:
             conn.execute(
-                f"UPDATE bookings SET driver_id = {driver_id} WHERE booking_id = '{selected_booking}'"
+                text("UPDATE bookings SET driver_id = :driver_id WHERE booking_id = :booking_id"),
+                {"driver_id": driver_id, "booking_id": selected_booking}
             )
 
         st.success(f"Driver '{selected_driver_name}' assigned successfully.")
@@ -107,8 +115,7 @@ if st.button("Assign Driver"):
         st.code(str(e))
 
 # ---------------------------------------------------------
-# Driver list
+# Active drivers
 # ---------------------------------------------------------
-st.subheader("🚗 Active Drivers")
-
+st.subheader("🧑‍✈️ Active Drivers")
 st.dataframe(drivers_df, use_container_width=True)
