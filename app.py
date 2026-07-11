@@ -205,7 +205,6 @@ if st.button("Submit Booking"):
             "pickup_time": pickup_time,
             "phone": phone,
             "comments": comments,
-            "driver": None,
             "checked_in": False,
             "created_at": datetime.now(),
             "postcode": postcode,
@@ -214,7 +213,8 @@ if st.button("Submit Booking"):
             "full_address": full_address,
             "preferred_name": preferred_name.strip(),
             "adult_count": int(adult_count),
-            "children_count": int(children_count) if children_count is not None else int(children_general)
+            "children_count": int(children_count) if children_count is not None else int(children_general),
+            "driver_id": None   # FIXED — matches your database schema
         }])
 
         # ---------------------------------------------------------
