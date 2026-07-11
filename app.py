@@ -10,17 +10,20 @@ import requests
 # ---------------------------------------------------------
 # Load secrets
 # ---------------------------------------------------------
-NEON_URL = os.getenv("NEON_URL")
-NEON_PG  = os.getenv("NEON_PG")
+NEON_URL = os.getenv("NEON_URL")     # SQLAlchemy URL
+NEON_PG  = os.getenv("NEON_PG")      # psycopg2 URL
 
 # ---------------------------------------------------------
-# Silent database connection test
+# Database connection test (visible if broken)
 # ---------------------------------------------------------
+db_ok = True
 try:
-    conn = psycopg2.connect(NEON_PG)
-    conn.close()
-except:
-    pass
+    test_conn = psycopg2.connect(NEON_PG)
+    test_conn.close()
+except Exception as e:
+    db_ok = False
+    st.error("❌ Database connection failed. Please check NEON_PG.")
+    st.code(str(e))
 
 # ---------------------------------------------------------
 # Page configuration
@@ -189,6 +192,8 @@ if st.button("Submit Booking"):
         st.error("Please enter your house number.")
     elif not street_name.strip():
         st.error("Please enter your street name.")
+    elif not db_ok:
+        st.error("❌ Booking cannot be saved because the database is not connected.")
     else:
         full_address = f"{house_number.strip()} {street_name.strip()}, {postcode}"
         booking_id = str(uuid.uuid4())
@@ -212,10 +217,24 @@ if st.button("Submit Booking"):
             "children_count": int(children_count) if children_count is not None else int(children_general)
         }])
 
-        engine = create_engine(NEON_URL)
-        df.to_sql("bookings", engine, if_exists="append", index=False)
+        # ---------------------------------------------------------
+        # Correct SQLAlchemy engine with SSL + stability
+        # ---------------------------------------------------------
+        try:
+            engine = create_engine(
+                NEON_URL,
+                connect_args={"sslmode": "require"},
+                pool_pre_ping=True,
+                pool_recycle=300
+            )
 
-        st.success("Your booking has been received. Thank you!")
-        st.balloons()
+            df.to_sql("bookings", engine, if_exists="append", index=False)
+
+            st.success("Your booking has been received. Thank you!")
+            st.balloons()
+
+        except Exception as e:
+            st.error("❌ Failed to save booking to database.")
+            st.code(str(e))
 
 st.markdown('</div>', unsafe_allow_html=True)
