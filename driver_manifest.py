@@ -9,19 +9,21 @@ import os
 NEON_URL = os.getenv("NEON_URL")
 engine = create_engine(NEON_URL)
 
-st.set_page_config(page_title="Driver Manifest", page_icon="🧑‍✈️", layout="wide")
-st.title("🧑‍✈️ Driver Manifest – RCCG Hope Centre")
+# ---------------------------------------------------------
+# Page setup
+# ---------------------------------------------------------
+st.set_page_config(page_title="My Passengers", page_icon="🚐", layout="wide")
+
+st.title("🚐 My Passengers")
+st.markdown("### Select your name below to see your assigned passengers.")
 
 # ---------------------------------------------------------
 # Load drivers
 # ---------------------------------------------------------
 drivers_df = pd.read_sql("SELECT driver_id, driver_name FROM drivers WHERE active = TRUE", engine)
 
-# ---------------------------------------------------------
-# Select driver
-# ---------------------------------------------------------
 driver_names = drivers_df["driver_name"].tolist()
-selected_driver_name = st.selectbox("Select Driver", driver_names)
+selected_driver_name = st.selectbox("Driver Name", driver_names)
 
 # Get driver_id
 driver_id = int(
@@ -36,7 +38,7 @@ driver_id = int(
 # ---------------------------------------------------------
 query = """
     SELECT 
-        b.preferred_name,
+        b.preferred_name AS passenger_name,
         b.location,
         b.children_count,
         b.adult_count,
@@ -49,7 +51,6 @@ query = """
     ORDER BY b.pickup_time ASC
 """
 
-# ⭐ FIX: wrap SQL in text() so named parameters work
 manifest_df = pd.read_sql(
     text(query),
     engine,
@@ -64,13 +65,25 @@ st.subheader(f"Passenger List for {selected_driver_name}")
 if manifest_df.empty:
     st.info("No passengers assigned yet.")
 else:
+    # Make phone numbers clickable
+    manifest_df["phone"] = manifest_df["phone"].apply(
+        lambda x: f"📞 {x}"
+    )
+
     st.dataframe(manifest_df, use_container_width=True)
 
-    # Summary
+    # Summary section
     total_adults = manifest_df["adult_count"].sum()
     total_children = manifest_df["children_count"].sum()
+    total_passengers = total_adults + total_children
 
     st.markdown("### Summary")
     st.markdown(f"- **Adults:** {total_adults}")
     st.markdown(f"- **Children:** {total_children}")
-    st.markdown(f"- **Total passengers:** {total_adults + total_children}")
+    st.markdown(f"- **Total passengers:** {total_passengers}")
+
+    st.markdown("---")
+    st.markdown("### Tips for Drivers")
+    st.markdown("- Tap the phone number to call the passenger.")
+    st.markdown("- Follow pickup times in order.")
+    st.markdown("- Check comments for special instructions.")
