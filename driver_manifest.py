@@ -20,7 +20,10 @@ st.markdown("### Select your name to see your passengers and check them in.")
 # ---------------------------------------------------------
 # Load drivers
 # ---------------------------------------------------------
-drivers_df = pd.read_sql("SELECT driver_id, driver_name FROM drivers WHERE active = TRUE", engine)
+drivers_df = pd.read_sql(
+    "SELECT driver_id, driver_name FROM drivers WHERE active = TRUE",
+    engine
+)
 
 driver_names = drivers_df["driver_name"].tolist()
 selected_driver_name = st.selectbox("Driver Name", driver_names)
@@ -90,13 +93,13 @@ else:
             if checked_in:
                 st.success("Checked In")
             else:
-                if st.button(f"Check In", key=booking_id):
+                if st.button("Check In", key=f"checkin_{booking_id}"):
                     with engine.begin() as conn:
                         conn.execute(
                             text("UPDATE bookings SET checked_in = TRUE WHERE booking_id = :bid"),
                             {"bid": booking_id}
                         )
-                    st.experimental_rerun()
+                    st.rerun()   # ✅ Correct replacement
 
     # Summary section
     total_adults = manifest_df["adult_count"].sum()
